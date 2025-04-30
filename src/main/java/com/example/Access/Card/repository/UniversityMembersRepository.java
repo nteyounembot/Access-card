@@ -14,6 +14,8 @@ public interface UniversityMembersRepository  extends JpaRepository<UniversityMe
     UniversityMembers findAllByEmail(String email);
     UniversityMembers findAllByMatricule(String matricule);
 
-    Optional<Object> findByUsername(String username);
+    Optional<UniversityMembers> findByUsername(String username);
+
+
 }
 

@@ -4,34 +4,17 @@ import com.example.Access.Card.DTO.UniversityMembersResponseDTO;
 import com.example.Access.Card.DTO.UniverstyMembersRequestDTO;
 import com.example.Access.Card.Mapper.UniversityMembersMapper;
 import com.example.Access.Card.Specification.UniversityMembersSpecification;
-import com.example.Access.Card.entities.EnumRole;
 import com.example.Access.Card.entities.UniversityMembers;
 import com.example.Access.Card.entities.Utilisateur;
 import com.example.Access.Card.repository.UniversityMembersRepository;
 import com.example.Access.Card.repository.UtilisateurRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.lang.reflect.Member;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.example.Access.Card.Specification.UniversityMembersSpecification.*;
 
 @Service
 public class UniversityMembersService {
@@ -59,7 +42,7 @@ public class UniversityMembersService {
         Utilisateur userSave = utilisateurRepository.save(user);
 
         UniversityMembers member = new UniversityMembers();
-        member.setCNI(dto.cni());
+        member.setCni(dto.cni());
         member.setName(dto.name());
         member.setEmail(dto.email());
         member.setTelephone(dto.telephone());
@@ -147,16 +130,27 @@ public class UniversityMembersService {
         UniversityMembers member = universityMembersRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Membre non trouvé"));
 
-        member.setGardien(!member.getGardien());
+        member.setGardien(!member.getUtilisateur().getGardien());
 
         UniversityMembers updated = universityMembersRepository.save(member);
 
         return new UniversityMembersMapper().apply(member);
 
     }
+    public UniversityMembersResponseDTO toggleEligible(Long id) {
+        UniversityMembers member = universityMembersRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Membre non trouvé"));
 
+        member.setEligible(!member.getUtilisateur().getEligible());
+
+        UniversityMembers updated = universityMembersRepository.save(member);
+
+        return new UniversityMembersMapper().apply(member);
 
     }
+    }
+
+
 
 
 

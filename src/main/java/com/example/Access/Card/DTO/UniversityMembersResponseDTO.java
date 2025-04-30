@@ -13,6 +13,8 @@ public record UniversityMembersResponseDTO (
         String matricule,
         String username,
         EnumRole role,
-        boolean eligible,
-        boolean gardien
+        boolean gardien,
+        boolean eligible
+
+
 ) {}

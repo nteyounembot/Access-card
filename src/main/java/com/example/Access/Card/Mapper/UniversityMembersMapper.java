@@ -16,13 +16,13 @@ public class UniversityMembersMapper implements Function<UniversityMembers, Univ
 
         return new UniversityMembersResponseDTO(
                 member.getId(),
-                member.getCNI(),
+                member.getCni(),
                 member.getName(),
                 member.getEmail(),
                 member.getTelephone(),
                 member.getFaculte(),
                 member.getNiveau(),
-                member.getmatricule(),
+                member.getMatricule(),
 
                 utilisateur != null ? utilisateur.getUsername() : null,
                 utilisateur != null ? utilisateur.getRole() : null,
@@ -40,5 +40,6 @@ public class UniversityMembersMapper implements Function<UniversityMembers, Univ
         }
         return dtoList;
     }
+
 }
 

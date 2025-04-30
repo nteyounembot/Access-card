@@ -14,6 +14,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -36,11 +41,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/utilisateur/inscription").permitAll()
                         .requestMatchers(HttpMethod.POST, "/utilisateur/activation").permitAll()
                         .requestMatchers(HttpMethod.POST, "/utilisateur/connexion").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/member/login-gardien").permitAll()
 
                         .anyRequest().authenticated()
                 )
@@ -64,6 +71,39 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Autoriser toutes les origines
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+
+        // Autoriser toutes les méthodes HTTP
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+        ));
+
+        // Autoriser tous les en-têtes
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // Exposer des en-têtes spécifiques
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        // Autoriser les informations d'identification
+        configuration.setAllowCredentials(false);
+
+        // Enregistrer la configuration pour toutes les routes
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
 }

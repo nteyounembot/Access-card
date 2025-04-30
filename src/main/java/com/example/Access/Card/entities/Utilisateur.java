@@ -130,4 +130,13 @@ public class Utilisateur implements UserDetails {
     public Boolean getGardien() {
         return getGardien();
     }
+
+
+
+    public boolean getEligible() {
+        return getEligible();
+    }
+
+
+
 }

@@ -1,13 +1,15 @@
 package com.example.Access.Card.controller;
 
 import com.example.Access.Card.DTO.*;
-import com.example.Access.Card.entities.UniversityMembers;
 import com.example.Access.Card.entities.Utilisateur;
 import com.example.Access.Card.repository.UniversityMembersRepository;
 import com.example.Access.Card.repository.UtilisateurRepository;
+import com.example.Access.Card.security.JwtService;
 import com.example.Access.Card.service.UniversityMembersService;
+import com.example.Access.Card.service.UtilisateurService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,18 +22,23 @@ import java.util.Map;
 @RequestMapping("/member")
 public class UniversityMemberController {
 
+    private UniversityMembersRepository  universityMembersRepository;
+    private  PasswordEncoder passwordEncoder;
+    private  final UtilisateurRepository utilisateurRepository;
     private final UniversityMembersService universityMembersService;
-    private final UniversityMembersRepository universityMembersRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UniversityMemberController(
-            UniversityMembersService universityMembersService,
-            UniversityMembersRepository universityMembersRepository,
-            PasswordEncoder passwordEncoder
-    ) {
-        this.universityMembersService = universityMembersService;
+    private final AuthenticationManager authenticationManager;
+    private final UtilisateurService utilisateurService;
+    private final JwtService jwtService;
+
+    public UniversityMemberController(UniversityMembersRepository universityMembersRepository, PasswordEncoder passwordEncoder, UtilisateurRepository utilisateurRepository, UniversityMembersService universityMembersService, AuthenticationManager authenticationManager, UtilisateurService utilisateurService, JwtService jwtService) {
         this.universityMembersRepository = universityMembersRepository;
         this.passwordEncoder = passwordEncoder;
+        this.utilisateurRepository = utilisateurRepository;
+        this.universityMembersService = universityMembersService;
+        this.authenticationManager = authenticationManager;
+        this.utilisateurService = utilisateurService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/create")
@@ -82,33 +89,53 @@ public class UniversityMemberController {
         UniversityMembersResponseDTO updated = universityMembersService.toggleGardien(id);
         return ResponseEntity.ok(updated);
     }
-
-
+    @PutMapping("/toggle-eligible/{id}")
+    public ResponseEntity<UniversityMembersResponseDTO> toggleEligible(@PathVariable Long id) {
+        UniversityMembersResponseDTO updated = universityMembersService.toggleGardien(id);
+        return ResponseEntity.ok(updated);
+    }
     @PostMapping("/login-gardien")
     public ResponseEntity<?> loginGardien(@RequestBody GardienLoginRequest request) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
 
-        Utilisateur member = (Utilisateur) UtilisateurRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("Nom d'utilisateur introuvable"));
+        Utilisateur user = utilisateurRepository
+                .findByEmail(request.email())
+                .orElseThrow(() -> new RuntimeException("email  de cette utilisateur est introuvable, ou accès non autorisé"));
 
-        if (!passwordEncoder.matches(request.password(), (String) member.getPassword())) {
+        user.setActive(true);
+        utilisateurRepository.save(user);
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
         }
 
-        if (!Boolean.TRUE.equals(member.getGardien())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès refusé : vous n'êtes pas autorisé en tant que gardien");
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
+            );
+
+            if (authentication.isAuthenticated()) {
+
+                String token = jwtService.generateToken(authentication);
+                response.put("status", "success");
+                response.put("token", token);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("status", "failure");
+                response.put("message", "Authentification échouée.");
+                return ResponseEntity.status(401).body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(401).body(response);
         }
 
-        response.put("status", "success");
-        response.put("message", "Connexion réussie en tant que gardien");
-        response.put("username", member.getUsername());
-        response.put("memberId", member.getId());
-
-        return ResponseEntity.ok(response);
     }
-
     }
-
 
 
 

@@ -1,4 +1,4 @@
 package com.example.Access.Card.DTO;
 
-public record GardienLoginRequest(String username, String password) {
+public record GardienLoginRequest(String email, String password) {
 }

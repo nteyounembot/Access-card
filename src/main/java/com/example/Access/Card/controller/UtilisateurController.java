@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,6 +90,27 @@ public class UtilisateurController {
             response.put("status", "error");
             response.put("message", "Identifiants invalides ou compte inactif.");
             return ResponseEntity.status(401).body(response);
+        }
+    }
+    @PostMapping(path = "/deconnexion", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> deconnexion(HttpServletRequest request) {
+        Map<String, String> response = new HashMap<>();
+
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+
+
+            response.put("status", "success");
+            response.put("message", "Déconnexion réussie.");
+            log.info("Déconnexion réussie pour le token : {}", token);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("status", "failure");
+            response.put("message", "Aucun token fourni.");
+            return ResponseEntity.status(400).body(response);
         }
     }
 
