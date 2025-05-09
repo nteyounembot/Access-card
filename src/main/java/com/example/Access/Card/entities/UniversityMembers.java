@@ -1,6 +1,10 @@
 package com.example.Access.Card.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Table(name = "university_member")
 @Entity
@@ -32,7 +36,7 @@ public class UniversityMembers {
     @Column(unique = true)
     private String matricule;
 
-    @OneToOne
+    @OneToOne(cascade = )
     @JoinColumn(name = "Utilisateur_id", referencedColumnName = "id")
     private Utilisateur utilisateur;
 
@@ -40,8 +44,15 @@ public class UniversityMembers {
     private boolean eligible = false;
 
     @Column(nullable = true)
-    private boolean gardien;
+    private boolean gardien = false;
 
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    // Constructeurs
     public UniversityMembers() {}
 
     public UniversityMembers(Long id, String cni, String name, String email, String telephone,
@@ -62,7 +73,7 @@ public class UniversityMembers {
         this.gardien = gardien;
     }
 
-
+    // Getters
     public Long getId() {
         return id;
     }
@@ -113,6 +124,14 @@ public class UniversityMembers {
 
     public boolean isGardien() {
         return gardien;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     // Setters
@@ -166,6 +185,14 @@ public class UniversityMembers {
 
     public void setGardien(boolean gardien) {
         this.gardien = gardien;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Object getRole() {

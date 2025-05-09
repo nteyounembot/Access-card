@@ -1,7 +1,6 @@
 package com.example.Access.Card.Mapper;
 
 import com.example.Access.Card.DTO.UniversityMembersResponseDTO;
-import com.example.Access.Card.entities.EnumRole;
 import com.example.Access.Card.entities.UniversityMembers;
 
 import java.util.ArrayList;
@@ -26,9 +25,10 @@ public class UniversityMembersMapper implements Function<UniversityMembers, Univ
 
                 utilisateur != null ? utilisateur.getUsername() : null,
                 utilisateur != null ? utilisateur.getRole() : null,
-
+                member.isGardien(),
                 member.isEligible(),
-                member.isGardien()
+                member.getCreatedAt(),
+                member.getUpdatedAt()
         );
     }
 
@@ -40,6 +40,4 @@ public class UniversityMembersMapper implements Function<UniversityMembers, Univ
         }
         return dtoList;
     }
-
 }
-

@@ -2,7 +2,9 @@ package com.example.Access.Card.DTO;
 
 import com.example.Access.Card.entities.EnumRole;
 
-public record UniversityMembersResponseDTO (
+import java.time.LocalDateTime;
+
+public record UniversityMembersResponseDTO(
         Long id,
         String cni,
         String name,
@@ -14,7 +16,7 @@ public record UniversityMembersResponseDTO (
         String username,
         EnumRole role,
         boolean gardien,
-        boolean eligible
-
-
+        boolean eligible,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {}

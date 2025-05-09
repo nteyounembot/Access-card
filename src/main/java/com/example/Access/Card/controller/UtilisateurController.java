@@ -66,6 +66,7 @@ public class UtilisateurController {
         Map<String, String> response = new HashMap<>();
 
         try {
+            System.out.println("debut de connexion");
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authenticationDTO.username(),
@@ -73,6 +74,7 @@ public class UtilisateurController {
                     )
             );
 
+            System.out.println("fin de connexion");
             if (authentication.isAuthenticated()) {
                 log.info("Authentification réussie pour : {}", authenticationDTO.username());
                 String token = jwtService.generateToken(authentication);

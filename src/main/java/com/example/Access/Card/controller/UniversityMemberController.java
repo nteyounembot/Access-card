@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -63,19 +64,8 @@ public class UniversityMemberController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchMembers(
-            @RequestParam(required = false) String cni,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String telephone,
-            @RequestParam(required = false) String faculte,
-            @RequestParam(required = false) String niveau,
-            @RequestParam(required = false) String matricule,
-            @RequestParam(required = false) Boolean eligible
-    ) {
-        return ResponseEntity.ok(universityMembersService.searchMembers(
-                cni, name, email, telephone, faculte, niveau, matricule, eligible
-        ));
+    public ResponseEntity<?> searchMembers(@RequestParam(required = false) String query) {
+        return ResponseEntity.ok(universityMembersService.searchMembers(query));
     }
 
     @DeleteMapping("/{id}")
@@ -102,10 +92,9 @@ public class UniversityMemberController {
                 .findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("email  de cette utilisateur est introuvable, ou accès non autorisé"));
 
-        user.setActive(true);
-        utilisateurRepository.save(user);
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
+        if (!user.isGardien()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("status", "error", "message", "Accès réservé aux gardiens."));
         }
 
         try {
@@ -135,7 +124,12 @@ public class UniversityMemberController {
         }
 
     }
+    @GetMapping("/all")
+    public ResponseEntity<List<UniversityMembersResponseDTO>> getAllMembers() {
+        List<UniversityMembersResponseDTO> members = universityMembersService.getAllMembers();
+        return ResponseEntity.ok(members);
     }
 
+}
 
 

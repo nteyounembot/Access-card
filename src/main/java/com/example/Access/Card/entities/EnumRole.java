@@ -2,7 +2,7 @@ package com.example.Access.Card.entities;
 
 public enum EnumRole {
     STUDENT,
-    TEST,
+    Gardiens,
     TEACHER,
     INTERNE,
     STAFF;

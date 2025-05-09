@@ -127,9 +127,6 @@ public class Utilisateur implements UserDetails {
         this.nom = nom;
     }
 
-    public Boolean getGardien() {
-        return getGardien();
-    }
 
 
 
@@ -137,6 +134,10 @@ public class Utilisateur implements UserDetails {
         return getEligible();
     }
 
+
+    public boolean isGardien() {
+        return isGardien();
+    }
 
 
 }

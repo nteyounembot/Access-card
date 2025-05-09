@@ -22,12 +22,9 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-
-
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final UtilisateurService utilisateurService;
-
     private final PasswordEncoder passwordEncoder;
 
     public SecurityConfig(PasswordEncoder passwordEncoder, JwtFilter jwtFilter, UtilisateurService utilisateurService) {
@@ -36,27 +33,24 @@ public class SecurityConfig {
         this.utilisateurService = utilisateurService;
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/utilisateur/connexion").permitAll()
                         .requestMatchers(HttpMethod.POST, "/utilisateur/inscription").permitAll()
                         .requestMatchers(HttpMethod.POST, "/utilisateur/activation").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/utilisateur/connexion").permitAll()
                         .requestMatchers(HttpMethod.POST, "/member/login-gardien").permitAll()
-
                         .anyRequest().authenticated()
                 )
+                .formLogin(form -> form.disable()) // désactivation du form login par défaut
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -66,47 +60,21 @@ public class SecurityConfig {
         return authProvider;
     }
 
-
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Autoriser toutes les origines
         configuration.setAllowedOrigins(Arrays.asList("*"));
-
-        // Autoriser toutes les méthodes HTTP
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
-        ));
-
-        // Autoriser tous les en-têtes
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-
-        // Exposer des en-têtes spécifiques
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
-
-        // Autoriser les informations d'identification
         configuration.setAllowCredentials(false);
-
-        // Enregistrer la configuration pour toutes les routes
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
-
 }
-
-
-
