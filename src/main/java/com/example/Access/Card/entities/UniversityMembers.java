@@ -36,7 +36,7 @@ public class UniversityMembers {
     @Column(unique = true)
     private String matricule;
 
-    @OneToOne(cascade = )
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "Utilisateur_id", referencedColumnName = "id")
     private Utilisateur utilisateur;
 

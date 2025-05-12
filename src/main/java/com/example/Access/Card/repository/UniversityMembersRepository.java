@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UniversityMembersRepository  extends JpaRepository<UniversityMembers, Long>,
         JpaSpecificationExecutor<UniversityMembers> {
     UniversityMembers findAllByCni(String cni);
-    UniversityMembers findAllByEmail(String email);
+    Optional<UniversityMembers> findByEmail(String email);  // Correction ici : Optional<UniversityMembers> au lieu de UniversityMembers
     UniversityMembers findAllByMatricule(String matricule);
 
     Optional<UniversityMembers> findByUsername(String username);

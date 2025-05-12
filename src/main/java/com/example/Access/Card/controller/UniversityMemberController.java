@@ -7,6 +7,7 @@ import com.example.Access.Card.repository.UtilisateurRepository;
 import com.example.Access.Card.security.JwtService;
 import com.example.Access.Card.service.UniversityMembersService;
 import com.example.Access.Card.service.UtilisateurService;
+import com.example.Access.Card.service.MemberService; // <-- IMPORT AJOUTÉ
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,16 +24,26 @@ import java.util.Map;
 @RequestMapping("/member")
 public class UniversityMemberController {
 
-    private UniversityMembersRepository  universityMembersRepository;
-    private  PasswordEncoder passwordEncoder;
-    private  final UtilisateurRepository utilisateurRepository;
+    private final UniversityMembersRepository universityMembersRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UtilisateurRepository utilisateurRepository;
     private final UniversityMembersService universityMembersService;
-
     private final AuthenticationManager authenticationManager;
     private final UtilisateurService utilisateurService;
     private final JwtService jwtService;
+    private final MemberService memberService; // <-- CHAMP AJOUTÉ
 
-    public UniversityMemberController(UniversityMembersRepository universityMembersRepository, PasswordEncoder passwordEncoder, UtilisateurRepository utilisateurRepository, UniversityMembersService universityMembersService, AuthenticationManager authenticationManager, UtilisateurService utilisateurService, JwtService jwtService) {
+    // ✅ CONSTRUCTEUR CORRIGÉ AVEC memberService
+    public UniversityMemberController(
+            UniversityMembersRepository universityMembersRepository,
+            PasswordEncoder passwordEncoder,
+            UtilisateurRepository utilisateurRepository,
+            UniversityMembersService universityMembersService,
+            AuthenticationManager authenticationManager,
+            UtilisateurService utilisateurService,
+            JwtService jwtService,
+            MemberService memberService // <-- AJOUT ICI
+    ) {
         this.universityMembersRepository = universityMembersRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilisateurRepository = utilisateurRepository;
@@ -40,6 +51,7 @@ public class UniversityMemberController {
         this.authenticationManager = authenticationManager;
         this.utilisateurService = utilisateurService;
         this.jwtService = jwtService;
+        this.memberService = memberService; // <-- AJOUT ICI
     }
 
     @PostMapping("/create")
@@ -50,7 +62,7 @@ public class UniversityMemberController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UniversityMembersResponseDTO> updatemember(
+    public ResponseEntity<UniversityMembersResponseDTO> updateMember(
             @PathVariable("id") Long id,
             @RequestBody UniversityMembersResponseDTO dto) {
         UniversityMembersResponseDTO updatedMember = universityMembersService.updateMember(id, dto);
@@ -79,18 +91,20 @@ public class UniversityMemberController {
         UniversityMembersResponseDTO updated = universityMembersService.toggleGardien(id);
         return ResponseEntity.ok(updated);
     }
+
     @PutMapping("/toggle-eligible/{id}")
     public ResponseEntity<UniversityMembersResponseDTO> toggleEligible(@PathVariable Long id) {
-        UniversityMembersResponseDTO updated = universityMembersService.toggleGardien(id);
+        UniversityMembersResponseDTO updated = universityMembersService.toggleEligible(id);
         return ResponseEntity.ok(updated);
     }
+
     @PostMapping("/login-gardien")
     public ResponseEntity<?> loginGardien(@RequestBody GardienLoginRequest request) {
         Map<String, String> response = new HashMap<>();
 
         Utilisateur user = utilisateurRepository
                 .findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("email  de cette utilisateur est introuvable, ou accès non autorisé"));
+                .orElseThrow(() -> new RuntimeException("Email de cet utilisateur est introuvable ou accès non autorisé"));
 
         if (!user.isGardien()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -106,7 +120,6 @@ public class UniversityMemberController {
             );
 
             if (authentication.isAuthenticated()) {
-
                 String token = jwtService.generateToken(authentication);
                 response.put("status", "success");
                 response.put("token", token);
@@ -122,14 +135,18 @@ public class UniversityMemberController {
             response.put("message", e.getMessage());
             return ResponseEntity.status(401).body(response);
         }
-
     }
+
     @GetMapping("/all")
     public ResponseEntity<List<UniversityMembersResponseDTO>> getAllMembers() {
         List<UniversityMembersResponseDTO> members = universityMembersService.getAllMembers();
         return ResponseEntity.ok(members);
     }
 
+    @PostMapping("/send-qr")
+    public ResponseEntity<String> sendQrCodeToMember(@RequestParam Long id) {
+        memberService.createMemberAndSendQRCode(id);
+        return ResponseEntity.ok("QR Code envoyé au membre ID " + id);
+    }
+
 }
-
-
